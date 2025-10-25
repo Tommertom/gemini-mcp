@@ -18,7 +18,8 @@
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "test": "tsx scripts/test-mcp-server.ts",
-    "test:verbose": "DEBUG=1 tsx scripts/test-mcp-server.ts"
+    "test:verbose": "DEBUG=1 tsx scripts/test-mcp-server.ts",
+    "test:keep-files": "tsx scripts/test-mcp-server.ts --preserve-files"
   },
   "keywords": [
     "mcp",

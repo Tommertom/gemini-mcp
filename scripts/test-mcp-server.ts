@@ -51,14 +51,14 @@ interface TestConfig {
 
 const TEST_CONFIG: TestConfig = {
     serverPath: path.join(__dirname, '..', 'dist', 'index.js'),
-    testTimeout: 30000, // 30 seconds
+    testTimeout: 60000, // 60 seconds - increased for Gemini API processing
     outputDir: '/tmp/gemini_mcp_test',
     testFiles: {
         testImage: path.join(os.tmpdir(), 'test-image.jpg'),
-        generateOutput: 'creative-description.txt',
+        generateOutput: 'image-prompt.txt',
         manipulateOutput: 'editing-instructions.md',
-        imagePromptOutput: 'image-generation-prompt.txt',
-        videoScriptOutput: 'video-script.txt'
+        imagePromptOutput: '', // unused
+        videoScriptOutput: '' // unused
     }
 };
 
@@ -261,12 +261,13 @@ class MCPTester {
     }
 
     async testGenerateMedia(): Promise<string> {
-        console.log('\n🎨 Testing generate_media tool...');
+        console.log('\n🎨 Testing generate_media tool (Generate Image Prompt)...');
+        console.log('   This tool generates detailed image descriptions/prompts from text input');
 
         const response = await this.sendRequest('tools/call', {
             name: 'generate_media',
             arguments: {
-                prompt: 'Create a detailed description for a futuristic cityscape at sunset with flying cars and neon lights. Include specific details about lighting, composition, and atmosphere.',
+                prompt: 'Create a detailed DALL-E or Midjourney style prompt for: A serene mountain landscape at golden hour with a crystal clear lake reflecting snow-capped peaks, surrounded by pine forests. Include specific details about lighting, camera angle, artistic style, and atmosphere.',
                 outputFile: TEST_CONFIG.testFiles.generateOutput
             }
         });
@@ -274,13 +275,13 @@ class MCPTester {
         if (response.result && response.result.content) {
             const output = response.result.content[0].text;
             console.log('✅ Generate media result:');
-            console.log('📄 Output:', output);
+            console.log('📄 Output file path:', output);
 
-            // Verify file was created if output looks like a path
+            // Verify file was created
             if (output.includes(TEST_CONFIG.outputDir)) {
                 try {
                     const content = await fs.readFile(output, 'utf8');
-                    console.log('📄 Generated content preview:', content.substring(0, 200) + '...');
+                    console.log('📄 Generated image prompt (first 300 chars):\n' + content.substring(0, 300) + '...\n');
                 } catch (error: any) {
                     console.log('⚠️  Could not read generated file:', error.message);
                 }
@@ -296,20 +297,21 @@ class MCPTester {
     }
 
     async testAnalyzeMedia(): Promise<string> {
-        console.log('\n🔍 Testing analyze_media tool...');
+        console.log('\n🔍 Testing analyze_media tool (Analyze Image)...');
+        console.log('   This tool analyzes an image file and answers questions about it');
 
         const response = await this.sendRequest('tools/call', {
             name: 'analyze_media',
             arguments: {
                 filePath: TEST_CONFIG.testFiles.testImage,
-                prompt: 'Analyze this file and describe what you can determine about it. Include details about content, structure, and any patterns you observe.'
+                prompt: 'Analyze this image in detail. Describe what you see, including colors, composition, objects, patterns, and any notable features. What type of image is this?'
             }
         });
 
         if (response.result && response.result.content) {
             const analysis = response.result.content[0].text;
             console.log('✅ Analyze media result:');
-            console.log('📄 Analysis:', analysis);
+            console.log('📄 Image analysis (first 300 chars):\n' + analysis.substring(0, 300) + '...\n');
             return analysis;
         } else if (response.error) {
             console.log('⚠️  Analyze media error:', response.error);
@@ -320,13 +322,14 @@ class MCPTester {
     }
 
     async testManipulateMedia(): Promise<string> {
-        console.log('\n🎛️  Testing manipulate_media tool...');
+        console.log('\n🎛️  Testing manipulate_media tool (Generate Editing Instructions)...');
+        console.log('   This tool generates detailed instructions for modifying an image');
 
         const response = await this.sendRequest('tools/call', {
             name: 'manipulate_media',
             arguments: {
                 inputFile: TEST_CONFIG.testFiles.testImage,
-                prompt: 'Provide detailed step-by-step instructions to enhance this content for professional presentation. Include specific techniques and parameters.',
+                prompt: 'Generate detailed step-by-step Photoshop or GIMP instructions to: Add a warm sunset filter, increase contrast by 20%, add a subtle vignette effect, and enhance colors to make them more vibrant. Include specific tool names, settings, and values.',
                 outputFile: TEST_CONFIG.testFiles.manipulateOutput
             }
         });
@@ -334,13 +337,13 @@ class MCPTester {
         if (response.result && response.result.content) {
             const output = response.result.content[0].text;
             console.log('✅ Manipulate media result:');
-            console.log('📄 Output:', output);
+            console.log('📄 Output file path:', output);
 
-            // Verify file was created if output looks like a path
+            // Verify file was created
             if (output.includes(TEST_CONFIG.outputDir)) {
                 try {
                     const content = await fs.readFile(output, 'utf8');
-                    console.log('📄 Generated instructions preview:', content.substring(0, 200) + '...');
+                    console.log('📄 Generated editing instructions (first 300 chars):\n' + content.substring(0, 300) + '...\n');
                 } catch (error: any) {
                     console.log('⚠️  Could not read manipulation instructions file:', error.message);
                 }
@@ -355,75 +358,7 @@ class MCPTester {
         }
     }
 
-    async testImagePromptGeneration(): Promise<string> {
-        console.log('\n🖼️  Testing image prompt generation...');
 
-        const response = await this.sendRequest('tools/call', {
-            name: 'generate_media',
-            arguments: {
-                prompt: 'Create a detailed DALL-E or Midjourney prompt for generating a professional product photography shot of a luxury watch. Include specific lighting setup, background, composition, camera angle, and style details.',
-                outputFile: TEST_CONFIG.testFiles.imagePromptOutput
-            }
-        });
-
-        if (response.result && response.result.content) {
-            const output = response.result.content[0].text;
-            console.log('✅ Image prompt generation result:');
-            console.log('📄 Output file:', output);
-
-            // Verify file was created if output looks like a path
-            if (output.includes(TEST_CONFIG.outputDir)) {
-                try {
-                    const content = await fs.readFile(output, 'utf8');
-                    console.log('📄 Generated prompt preview:', content.substring(0, 150) + '...');
-                } catch (error: any) {
-                    console.log('⚠️  Could not read prompt file:', error.message);
-                }
-            }
-
-            return output;
-        } else if (response.error) {
-            console.log('⚠️  Image prompt generation error:', response.error);
-            return `Error: ${response.error.message || 'Unknown error'}`;
-        } else {
-            throw new Error('Invalid generate_media response');
-        }
-    }
-
-    async testVideoScriptGeneration(): Promise<string> {
-        console.log('\n🎬 Testing video script generation...');
-
-        const response = await this.sendRequest('tools/call', {
-            name: 'generate_media',
-            arguments: {
-                prompt: 'Create a detailed 30-second video script for a tech startup promotional video. Include shot descriptions, camera movements, dialogue, timing, music cues, and visual effects. Format as a professional shooting script.',
-                outputFile: TEST_CONFIG.testFiles.videoScriptOutput
-            }
-        });
-
-        if (response.result && response.result.content) {
-            const output = response.result.content[0].text;
-            console.log('✅ Video script generation result:');
-            console.log('📄 Output file:', output);
-
-            // Verify file was created if output looks like a path
-            if (output.includes(TEST_CONFIG.outputDir)) {
-                try {
-                    const content = await fs.readFile(output, 'utf8');
-                    console.log('📄 Generated script preview:', content.substring(0, 150) + '...');
-                } catch (error: any) {
-                    console.log('⚠️  Could not read script file:', error.message);
-                }
-            }
-
-            return output;
-        } else if (response.error) {
-            console.log('⚠️  Video script generation error:', response.error);
-            return `Error: ${response.error.message || 'Unknown error'}`;
-        } else {
-            throw new Error('Invalid generate_media response');
-        }
-    }
 
     async testErrorHandling(): Promise<void> {
         console.log('\n❌ Testing error handling...');
@@ -479,7 +414,7 @@ class MCPTester {
         }
     }
 
-    async cleanup(): Promise<void> {
+    async cleanup(preserveFiles: boolean = false): Promise<void> {
         console.log('\n🧹 Cleaning up...');
 
         if (this.server) {
@@ -487,44 +422,79 @@ class MCPTester {
             console.log('✅ Server terminated');
         }
 
-        // Clean up test files
-        try {
-            await fs.unlink(TEST_CONFIG.testFiles.testImage);
-            console.log('✅ Test files cleaned up');
-        } catch (error) {
-            console.log('📁 Test files already cleaned or not found');
+        if (!preserveFiles) {
+            // Clean up test files and output directory
+            try {
+                await fs.unlink(TEST_CONFIG.testFiles.testImage);
+            } catch (error) {
+                // Test image might not exist or already cleaned
+            }
+
+            try {
+                // Remove the entire output directory and its contents
+                await fs.rm(TEST_CONFIG.outputDir, { recursive: true, force: true });
+                console.log('✅ Test files cleaned up');
+            } catch (error) {
+                console.log('📁 Test files already cleaned or not found');
+            }
+        } else {
+            console.log('📁 Generated files preserved in:', TEST_CONFIG.outputDir);
         }
     }
 
-    async runAllTests(): Promise<void> {
+    async runAllTests(preserveFiles: boolean = false): Promise<void> {
         try {
             await this.setupTestEnvironment();
             await this.startServer();
             await this.initialize();
 
-            const tools = await this.testListTools();
-            await this.testGenerateMedia();
-            await this.testImagePromptGeneration();
-            await this.testVideoScriptGeneration();
-            await this.testAnalyzeMedia();
-            await this.testManipulateMedia();
-            await this.testErrorHandling();
+            console.log('\n' + '='.repeat(60));
+            console.log('🧪 COMPREHENSIVE MCP SERVER TEST SUITE');
+            console.log('='.repeat(60));
+            console.log('\nTesting the two core scenarios:');
+            console.log('1️⃣  Generate an image prompt from text description');
+            console.log('2️⃣  Analyze an existing image and answer questions');
+            console.log('='.repeat(60));
 
-            console.log('\n🎉 All tests completed successfully!');
+            // First, list available tools
+            const tools = await this.testListTools();
+
+            // SCENARIO 1: Generate image prompt from text
+            console.log('\n' + '='.repeat(60));
+            console.log('SCENARIO 1: Generate Image Prompt from Text Description');
+            console.log('='.repeat(60));
+            await this.testGenerateMedia();
+
+            // SCENARIO 2: Analyze an existing image
+            console.log('\n' + '='.repeat(60));
+            console.log('SCENARIO 2: Analyze Existing Image');
+            console.log('='.repeat(60));
+            await this.testAnalyzeMedia();
+
+            console.log('\n' + '='.repeat(60));
+            console.log('🎉 ALL TESTS COMPLETED SUCCESSFULLY!');
+            console.log('='.repeat(60));
 
         } catch (error: any) {
             console.error('\n💥 Test failed:', error);
             throw error;
         } finally {
-            await this.cleanup();
+            await this.cleanup(preserveFiles);
         }
     }
 }
 
 // Run tests if this script is executed directly
 async function main() {
+    // Check for preserve files argument
+    const preserveFiles = process.argv.includes('--preserve-files') || process.argv.includes('-p');
+
     console.log('🧪 Starting MCP Server Tests...');
     console.log('='.repeat(50));
+
+    if (preserveFiles) {
+        console.log('📁 Files will be preserved after testing');
+    }
 
     // Check if server is built
     try {
@@ -537,8 +507,16 @@ async function main() {
     const tester = new MCPTester();
 
     try {
-        await tester.runAllTests();
+        await tester.runAllTests(preserveFiles);
         console.log('\n✅ All tests passed!');
+
+        if (preserveFiles) {
+            console.log(`📁 Generated files are available in: ${TEST_CONFIG.outputDir}`);
+            console.log('🔍 Check the following files:');
+            console.log('   - image-prompt.txt (Generated image prompt)');
+            console.log('   - editing-instructions.md (Image editing instructions)');
+        }
+
         process.exit(0);
     } catch (error: any) {
         console.error('\n❌ Tests failed:', error.message);

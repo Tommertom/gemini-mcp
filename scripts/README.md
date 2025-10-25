@@ -6,6 +6,8 @@ This directory contains test scripts for the Gemini MCP server that communicate 
 
 - `test-mcp-server.ts` - Main TypeScript test script with comprehensive testing
 - `test-mcp-server.js` - JavaScript version (legacy)
+- `quick-test.sh` - Quick test runner for Unix/Linux/macOS
+- `quick-test.bat` - Quick test runner for Windows
 
 ## Running Tests
 
@@ -23,6 +25,17 @@ export GEMINI_API_KEY="your-api-key-here"
 
 ### Running Tests
 
+**Quick Test (Unix/Linux/macOS):**
+```bash
+./scripts/quick-test.sh
+```
+
+**Quick Test (Windows):**
+```cmd
+scripts\quick-test.bat
+```
+
+**Manual Testing:**
 ```bash
 # Run all tests
 npm test

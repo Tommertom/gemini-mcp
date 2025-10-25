@@ -2,6 +2,7 @@
 
 # Quick test script for MCP server
 # Usage: ./scripts/quick-test.sh
+# Windows: scripts\quick-test.bat
 
 set -e
 
@@ -40,12 +41,21 @@ fi
 
 echo ""
 echo "🚀 Running comprehensive tests..."
-npm test
+if [ "$1" = "--keep-files" ] || [ "$1" = "-k" ]; then
+    echo "📁 Generated files will be preserved..."
+    npm run test:keep-files
+else
+    npm test
+fi
+
 
 echo ""
-echo "✅ Test completed successfully!"
+echo "✅ Tests completed successfully!"
 echo ""
 echo "💡 Tips:"
-echo "   - Set GEMINI_API_KEY for full AI functionality"
+echo "   - Tests verify two core scenarios:"
+echo "     1. Generate image prompts from text"
+echo "     2. Analyze existing images"
+echo "   - Use './scripts/quick-test.sh --keep-files' to preserve generated files"
+echo "   - Check /tmp/gemini_mcp_test/ for generated files when using --keep-files"
 echo "   - Use 'npm run test:verbose' for detailed output"
-echo "   - Check /tmp/gemini_mcp_test/ for generated files"

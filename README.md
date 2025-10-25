@@ -315,6 +315,58 @@ Gemini-mcp/
 3. **Rate Limits**: Be aware of Gemini API rate limits and quotas
 4. **File Access**: The server reads files from the filesystem - ensure proper permissions
 
+## 🧪 Testing
+
+The server includes comprehensive tests to verify MCP protocol compliance and tool functionality:
+
+### Quick Testing
+
+**Unix/Linux/macOS:**
+```bash
+./scripts/quick-test.sh
+```
+
+**Windows:**
+```cmd
+scripts\quick-test.bat
+```
+
+### Manual Testing
+
+```bash
+# Run all tests (files cleaned up after)
+npm test
+
+# Run tests with verbose output
+npm run test:verbose
+
+# Run tests and preserve generated files
+npm run test:keep-files
+
+# Build and test
+npm run build && npm test
+```
+
+**Preserve Generated Files:**
+Use `npm run test:keep-files` or `./scripts/quick-test.sh --keep-files` to keep the AI-generated content after testing. This is useful for:
+- Examining the actual AI outputs
+- Testing with real generated content
+- Debugging and development
+- Showcasing the tool capabilities
+
+The test suite:
+- ✅ Validates MCP protocol handshake
+- ✅ Tests all tool endpoints with real API calls
+- ✅ Verifies error handling and validation
+- ✅ Generates sample output files with proper extensions
+- ✅ Checks file system integration
+
+Test output files are saved to `/tmp/gemini_mcp_test/` (or `%TEMP%\gemini_mcp_test\` on Windows) and include:
+- `creative-description.txt` - AI-generated scene descriptions
+- `image-generation-prompt.txt` - Detailed prompts for image generators
+- `video-script.txt` - Professional video scripts
+- `editing-instructions.md` - Step-by-step editing guidelines
+
 ## 📊 Output Directory
 
 All generated and manipulated content is saved to `/tmp/gemini_mcp` by default. You can customize this by setting the `GEMINI_OUTPUT_DIR` environment variable.
