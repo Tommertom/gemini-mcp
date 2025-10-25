@@ -1,5 +1,5 @@
 {
-  "name": "gemini-mcp-server",
+  "name": "gemini-image-mcp-server",
   "version": "0.3.1",
   "description": "MCP server for Google Gemini media operations",
   "type": "module",
