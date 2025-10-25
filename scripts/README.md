@@ -1,153 +1,72 @@
 # MCP Server Test Script
 
-This directory contains test scripts for the Gemini MCP server that communicate via stdio to test all tools and functionality.
+Test the Gemini MCP server with actual Gemini API calls to verify all tools are working correctly.
 
-## Files
-
-- `test-mcp-server.ts` - Main TypeScript test script with comprehensive testing
-- `test-mcp-server.js` - JavaScript version (legacy)
-- `quick-test.sh` - Quick test runner for Unix/Linux/macOS
-- `quick-test.bat` - Quick test runner for Windows
-
-## Running Tests
+## How to Run
 
 ### Prerequisites
 
-1. Build the project first:
+1. Build the project:
 ```bash
 npm run build
 ```
 
-2. (Optional) Set your Gemini API key for full functionality testing:
+2. Configure your Gemini API key:
 ```bash
-export GEMINI_API_KEY="your-api-key-here"
+cp .env.example .env
+# Edit .env and set your GEMINI_API_KEY
 ```
 
-### Running Tests
+### Run Tests
 
-**Quick Test (Unix/Linux/macOS):**
 ```bash
+# Quick test
 ./scripts/quick-test.sh
-```
 
-**Quick Test (Windows):**
-```cmd
-scripts\quick-test.bat
-```
-
-**Manual Testing:**
-```bash
-# Run all tests
-npm test
-
-# Run tests with verbose output
-npm run test:verbose
-
-# Run directly with tsx
+# Or run directly
 tsx scripts/test-mcp-server.ts
+
+# Keep generated files after testing
+tsx scripts/test-mcp-server.ts --preserve-files
 ```
 
-## What the Tests Do
+## What to Expect
 
-The test script performs comprehensive testing of the MCP server:
+The test will:
 
-### 1. **Server Setup & Connection**
-- ✅ Starts the MCP server as a child process
-- ✅ Establishes stdio communication
-- ✅ Performs MCP protocol initialization handshake
+1. **Validate your environment** - Check `.env` file and API key
+2. **Start the MCP server** - Launch server and establish connection
+3. **Test 3 tools:**
+   - `generate_media` - Generate an actual image from text description
+   - `analyze_media` - Analyze an existing image file
+   - `manipulate_media` - Generate image editing instructions
+4. **Verify outputs** - Check files are created and contain valid content
 
-### 2. **Tool Discovery**
-- ✅ Tests `tools/list` endpoint
-- ✅ Verifies all 3 tools are available:
-  - `generate_media` - Content generation
-  - `analyze_media` - Media analysis  
-  - `manipulate_media` - Editing instructions
-
-### 3. **Functional Testing**
-Each tool is tested with realistic parameters:
-
-#### Generate Media Tool
-- ✅ Tests content generation with creative prompts
-- ✅ Verifies file output path is returned
-- ✅ Checks generated content is saved correctly
-
-#### Analyze Media Tool
-- ✅ Tests media analysis capabilities
-- ✅ Uses test files to simulate media input
-- ✅ Verifies analysis text is returned directly
-
-#### Manipulate Media Tool
-- ✅ Tests manipulation instruction generation
-- ✅ Verifies instruction file creation
-- ✅ Checks output file path is returned
-
-### 4. **Error Handling**
-- ✅ Tests missing required parameters
-- ✅ Tests invalid file paths
-- ✅ Verifies proper error messages are returned
-- ✅ Confirms graceful failure handling
-
-### 5. **Output Validation**
-- ✅ File-generating tools return file paths (not JSON)
-- ✅ Analysis tool returns text content directly
-- ✅ Error cases return clear error messages
-- ✅ All stdio communication follows MCP protocol
-
-## Sample Output
+### Sample Output
 
 ```
+✅ .env file loaded successfully
+✅ GEMINI_API_KEY is configured
 🧪 Starting MCP Server Tests...
-==================================================
-🔧 Setting up test environment...
-✅ Created output directory: /tmp/gemini_mcp_test
-✅ Created test file: /tmp/test-image.txt
-🚀 Starting MCP server...
-🔍 Server stderr: Gemini MCP server running on stdio
 
-🔗 Initializing MCP connection...
+🚀 Starting MCP server...
 ✅ Initialization response received
 
 🛠️  Testing tools/list...
-✅ Found 3 tools:
-   - generate_media: Generate creative content...
-   - analyze_media: Analyze images, videos...
-   - manipulate_media: Provide intelligent instructions...
+✅ Found 3 tools
 
-🎨 Testing generate_media tool...
-✅ Generate media result:
-📄 Output: /tmp/gemini_mcp_test/test-generation.txt
+🎨 Testing generate_media tool (Generate Actual Image)...
+✅ Image file successfully generated: .png format
 
-🔍 Testing analyze_media tool...
-✅ Analyze media result:
-📄 Analysis: This appears to be a text file containing...
+🔍 Testing analyze_media tool (Analyze Image)...
+✅ Image analysis completed
 
 🎛️  Testing manipulate_media tool...
-✅ Manipulate media result:
-📄 Output: /tmp/gemini_mcp_test/test-manipulation.txt
+✅ Editing instructions generated
 
-❌ Testing error handling...
-✅ Error handling test result: Error: outputFile is required
-✅ Proper error message returned
-
-🎉 All tests completed successfully!
+🎉 ALL TESTS COMPLETED SUCCESSFULLY!
 ✅ All tests passed!
 ```
 
-## Notes
 
-- **API Key**: Tests work without a valid Gemini API key, but will show API errors for actual AI operations
-- **File System**: Tests create temporary files in `/tmp/gemini_mcp_test` and clean up afterward
-- **Protocol**: All communication uses proper MCP (Model Context Protocol) JSON-RPC format
-- **Error Simulation**: Tests deliberately trigger error conditions to verify error handling
-
-## Test Coverage
-
-- ✅ **Server Lifecycle**: Start, initialize, communicate, cleanup
-- ✅ **Protocol Compliance**: Proper MCP JSON-RPC message format
-- ✅ **Tool Registration**: All tools discoverable via `tools/list`
-- ✅ **Parameter Validation**: Required parameters enforced
-- ✅ **File Operations**: Output file creation and path return
-- ✅ **Error Handling**: Graceful error responses
-- ✅ **Content Validation**: Proper output format for each tool type
-
-This provides confidence that the MCP server is working correctly and ready for integration with AI agents and other MCP clients.
+Generated files are saved to `/tmp/gemini_mcp_test/` (or kept with `--preserve-files` flag).
