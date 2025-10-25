@@ -284,7 +284,7 @@ class MCPTester {
                 try {
                     const stats = await fs.stat(output);
                     console.log(`📄 Generated image file size: ${stats.size} bytes`);
-                    
+
                     // Check file extension
                     const ext = path.extname(output).toLowerCase();
                     if (['.png', '.jpg', '.jpeg', '.webp'].includes(ext)) {

@@ -79,7 +79,7 @@ export class GeminiClient {
                 success: true,
                 message: 'Image generated successfully',
                 outputPath,
-                data: { 
+                data: {
                     mimeType,
                     size: imageData.length,
                     extension
