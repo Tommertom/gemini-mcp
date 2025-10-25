@@ -54,8 +54,8 @@ const TEST_CONFIG: TestConfig = {
     testTimeout: 60000, // 60 seconds - increased for Gemini API processing
     outputDir: '/tmp/gemini_mcp_test',
     testFiles: {
-        testImage: path.join(os.tmpdir(), 'test-image.jpg'),
-        generateOutput: 'image-prompt.txt',
+        testImage: path.join(__dirname, 'test-image.png'),
+        generateOutput: 'generated-image.png',
         manipulateOutput: 'editing-instructions.md',
         imagePromptOutput: '', // unused
         videoScriptOutput: '' // unused
@@ -93,12 +93,14 @@ class MCPTester {
             console.log(`📁 Output directory already exists: ${TEST_CONFIG.outputDir}`);
         }
 
-        // Create a simple test image file (minimal 1x1 pixel JPEG)
-        // This is a base64-encoded 1x1 red pixel JPEG image
-        const minimalJpegBase64 = '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=';
-        const imageBuffer = Buffer.from(minimalJpegBase64, 'base64');
-        await fs.writeFile(TEST_CONFIG.testFiles.testImage, imageBuffer);
-        console.log(`✅ Created test image file: ${TEST_CONFIG.testFiles.testImage}`);
+        // Verify test image exists
+        try {
+            await fs.access(TEST_CONFIG.testFiles.testImage);
+            console.log(`✅ Using test image: ${TEST_CONFIG.testFiles.testImage}`);
+        } catch (error) {
+            console.error(`❌ Test image not found: ${TEST_CONFIG.testFiles.testImage}`);
+            throw new Error('Test image file is missing');
+        }
     }
 
     async startServer(): Promise<void> {
@@ -261,13 +263,13 @@ class MCPTester {
     }
 
     async testGenerateMedia(): Promise<string> {
-        console.log('\n🎨 Testing generate_media tool (Generate Image Prompt)...');
-        console.log('   This tool generates detailed image descriptions/prompts from text input');
+        console.log('\n🎨 Testing generate_media tool (Generate Actual Image)...');
+        console.log('   This tool generates actual images using Gemini AI');
 
         const response = await this.sendRequest('tools/call', {
             name: 'generate_media',
             arguments: {
-                prompt: 'Create a detailed DALL-E or Midjourney style prompt for: A serene mountain landscape at golden hour with a crystal clear lake reflecting snow-capped peaks, surrounded by pine forests. Include specific details about lighting, camera angle, artistic style, and atmosphere.',
+                prompt: 'A serene mountain landscape at golden hour with a crystal clear lake reflecting snow-capped peaks, surrounded by pine forests. Photorealistic, 4K quality, dramatic lighting.',
                 outputFile: TEST_CONFIG.testFiles.generateOutput
             }
         });
@@ -277,11 +279,19 @@ class MCPTester {
             console.log('✅ Generate media result:');
             console.log('📄 Output file path:', output);
 
-            // Verify file was created
+            // Verify file was created and check if it's an image
             if (output.includes(TEST_CONFIG.outputDir)) {
                 try {
-                    const content = await fs.readFile(output, 'utf8');
-                    console.log('📄 Generated image prompt (first 300 chars):\n' + content.substring(0, 300) + '...\n');
+                    const stats = await fs.stat(output);
+                    console.log(`📄 Generated image file size: ${stats.size} bytes`);
+                    
+                    // Check file extension
+                    const ext = path.extname(output).toLowerCase();
+                    if (['.png', '.jpg', '.jpeg', '.webp'].includes(ext)) {
+                        console.log(`✅ Image file successfully generated: ${ext} format\n`);
+                    } else {
+                        console.log(`⚠️  Unexpected file format: ${ext}\n`);
+                    }
                 } catch (error: any) {
                     console.log('⚠️  Could not read generated file:', error.message);
                 }
@@ -423,13 +433,7 @@ class MCPTester {
         }
 
         if (!preserveFiles) {
-            // Clean up test files and output directory
-            try {
-                await fs.unlink(TEST_CONFIG.testFiles.testImage);
-            } catch (error) {
-                // Test image might not exist or already cleaned
-            }
-
+            // Clean up output directory only (not the test image)
             try {
                 // Remove the entire output directory and its contents
                 await fs.rm(TEST_CONFIG.outputDir, { recursive: true, force: true });
@@ -452,7 +456,7 @@ class MCPTester {
             console.log('🧪 COMPREHENSIVE MCP SERVER TEST SUITE');
             console.log('='.repeat(60));
             console.log('\nTesting the two core scenarios:');
-            console.log('1️⃣  Generate an image prompt from text description');
+            console.log('1️⃣  Generate an actual image from text description');
             console.log('2️⃣  Analyze an existing image and answer questions');
             console.log('='.repeat(60));
 
@@ -461,7 +465,7 @@ class MCPTester {
 
             // SCENARIO 1: Generate image prompt from text
             console.log('\n' + '='.repeat(60));
-            console.log('SCENARIO 1: Generate Image Prompt from Text Description');
+            console.log('SCENARIO 1: Generate Actual Image from Text Description');
             console.log('='.repeat(60));
             await this.testGenerateMedia();
 
@@ -513,7 +517,7 @@ async function main() {
         if (preserveFiles) {
             console.log(`📁 Generated files are available in: ${TEST_CONFIG.outputDir}`);
             console.log('🔍 Check the following files:');
-            console.log('   - image-prompt.txt (Generated image prompt)');
+            console.log('   - generated-image.png (Generated image file)');
             console.log('   - editing-instructions.md (Image editing instructions)');
         }
 

@@ -57,39 +57,42 @@ export class GeminiMcpServer {
             tools: [
                 {
                     name: 'generate_media',
-                    description: `Generate creative content, descriptions, or scripts for images/videos using Gemini AI. Optimized for coding agents building media-rich applications.
+                    description: `Generate actual images using Gemini's multimodal AI image generation capabilities. Optimized for coding agents building media-rich applications.
                     
 CODING AGENT BENEFITS:
-- Generate detailed image specifications for UI/UX mockups and design documentation
-- Create comprehensive video storyboards and shot lists for automated video generation tools
-- Produce structured media descriptions for database seeding and content management systems
-- Generate alt-text and accessibility descriptions for web development projects
-- Create detailed prompts for AI image generators (DALL-E, Midjourney, Stable Diffusion)
-- Generate media-related code comments and documentation with rich contextual details
+- Generate actual images for UI/UX mockups and design prototyping
+- Create visual assets for automated content generation workflows
+- Produce product photography and marketing materials programmatically
+- Generate illustrations and graphics for documentation and presentations
+- Create visual training data for machine learning pipelines
+- Generate placeholder images and assets for development and testing
 
 BEST PRACTICES FOR AI AGENTS:
-- Image Generation Prompts: Be highly specific about style, composition, lighting, colors, mood, and subject details
-  Example: "A photorealistic sunset over a mountain lake, golden hour lighting, reflection on calm water, 4K quality"
-- Video Concept Generation: Include shot types, transitions, pacing, and narrative structure
-  Example: "30-second product video: Start with close-up of product, pan out to lifestyle scene, include upbeat background music cue"
-- Storyboard Descriptions: Specify camera angles, character positions, and scene progression
-- Character Descriptions: Include physical details, clothing, expressions, and personality traits
-- Scene Settings: Describe environment, atmosphere, time of day, weather conditions
-- Technical Specs: Mention aspect ratios, resolution, frame rates when relevant
-- Style References: Reference artistic styles, photographers, or cinematographers
-- Emotional Tone: Clearly state the desired emotional response or atmosphere
+- Image Generation: Be highly specific about style, composition, lighting, colors, mood, and subject details
+  Example: "A photorealistic sunset over a mountain lake, golden hour lighting, reflection on calm water, 4K quality, dramatic sky"
+- Photorealistic Images: Use photography terms like camera angles, lens types (35mm, macro), lighting setups
+- Artistic Styles: Specify artistic styles (watercolor, sketch, digital art, impressionism) for non-photorealistic results
+- Product Photography: Describe studio setup, lighting, background, angle for product shots
+- Illustrations: Be specific about line style, color palette, shading technique
+- Technical Details: Mention desired quality level, level of detail, rendering style
+- Composition: Specify framing, rule of thirds, focal points, depth of field
+- Mood & Atmosphere: Describe the emotional tone and atmosphere you want to convey
 
-OUTPUT: Returns the absolute file path of the generated content file saved to /tmp/gemini_mcp.`,
+IMAGE OUTPUT:
+- Returns the absolute file path to the generated PNG/JPEG image
+- Images are saved to /tmp/gemini_mcp by default
+- File includes mime type information (image/png, image/jpeg, etc.)
+- Supports various aspect ratios and sizes`,
                     inputSchema: {
                         type: 'object',
                         properties: {
                             prompt: {
                                 type: 'string',
-                                description: 'Detailed creative prompt. For images: describe composition, style, lighting, colors, mood. For videos: include shots, transitions, pacing, narrative. Be specific and detailed for best results.',
+                                description: 'Detailed image generation prompt. Be specific about composition, style, lighting, colors, mood, subject details, and desired artistic style for best results.',
                             },
                             outputFile: {
                                 type: 'string',
-                                description: 'Output filename (will be saved to /tmp/gemini_mcp). Use descriptive names like "product_video_script.txt" or "hero_image_description.txt"',
+                                description: 'Output filename (will be saved to /tmp/gemini_mcp). Extension (.png, .jpg) will be added automatically based on the generated image format. Use descriptive names like "mountain-landscape" or "product-shot"',
                             },
                         },
                         required: ['prompt', 'outputFile'],

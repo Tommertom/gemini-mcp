@@ -6,6 +6,7 @@ import path from 'path';
 export class GeminiClient {
     private genAI: GoogleGenerativeAI;
     private model: any;
+    private imageModel: any;
     private outputDir: string;
 
     constructor(config: GeminiConfig) {
@@ -16,6 +17,10 @@ export class GeminiClient {
         this.genAI = new GoogleGenerativeAI(config.apiKey);
         this.model = this.genAI.getGenerativeModel({
             model: config.model || 'gemini-2.5-flash'
+        });
+        // Image generation model
+        this.imageModel = this.genAI.getGenerativeModel({
+            model: 'gemini-2.5-flash-image'
         });
         this.outputDir = config.outputDir || '/tmp/gemini_mcp';
     }
@@ -32,19 +37,53 @@ export class GeminiClient {
         try {
             await this.ensureOutputDir();
 
-            const result = await this.model.generateContent(prompt);
+            // Use the image generation model
+            const result = await this.imageModel.generateContent([prompt]);
             const response = await result.response;
-            const text = response.text();
 
-            const outputPath = path.join(this.outputDir, outputFile);
+            // Check if response contains image data
+            const candidates = response.candidates;
+            if (!candidates || candidates.length === 0) {
+                return {
+                    success: false,
+                    message: 'No image generated'
+                };
+            }
 
-            await fs.writeFile(outputPath, text);
+            const parts = candidates[0].content.parts;
+            let imageData: Buffer | null = null;
+            let mimeType = 'image/png';
+
+            for (const part of parts) {
+                if (part.inlineData) {
+                    imageData = Buffer.from(part.inlineData.data, 'base64');
+                    mimeType = part.inlineData.mimeType || 'image/png';
+                    break;
+                }
+            }
+
+            if (!imageData) {
+                return {
+                    success: false,
+                    message: 'No image data found in response'
+                };
+            }
+
+            // Determine file extension from mime type
+            const extension = mimeType.split('/')[1] || 'png';
+            const outputPath = path.join(this.outputDir, outputFile.endsWith(`.${extension}`) ? outputFile : `${outputFile}.${extension}`);
+
+            await fs.writeFile(outputPath, imageData);
 
             return {
                 success: true,
-                message: 'Content generated successfully',
+                message: 'Image generated successfully',
                 outputPath,
-                data: { text }
+                data: { 
+                    mimeType,
+                    size: imageData.length,
+                    extension
+                }
             };
         } catch (error: any) {
             return {
