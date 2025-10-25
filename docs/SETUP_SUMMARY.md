@@ -62,7 +62,7 @@ The MCP server provides three main tools:
 
 Required environment variables:
 - `GEMINI_API_KEY` - Your Google Gemini API key (required)
-- `GEMINI_MODEL` - Model to use (default: gemini-1.5-flash)
+- `GEMINI_MODEL` - Model to use (default: gemini-2.5-flash)
 - `GEMINI_OUTPUT_DIR` - Output directory (default: /tmp/gemini_mcp)
 
 ### Build Status

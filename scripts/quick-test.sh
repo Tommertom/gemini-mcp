@@ -16,12 +16,26 @@ fi
 
 echo "✅ Server build found"
 
-# Check for API key
-if [ -z "$GEMINI_API_KEY" ]; then
-    echo "⚠️  GEMINI_API_KEY not set. Some operations may fail."
-    echo "   Set it with: export GEMINI_API_KEY='your-key-here'"
+# Check for API key configuration
+if [ -f ".env" ]; then
+    echo "✅ .env file found"
+    # Source the .env file to check if API key is set
+    source .env 2>/dev/null || true
+    if [ -n "$GEMINI_API_KEY" ] && [ "$GEMINI_API_KEY" != "your-api-key-here" ]; then
+        echo "✅ GEMINI_API_KEY is configured in .env file"
+    else
+        echo "❌ GEMINI_API_KEY not properly set in .env file"
+        echo "   Edit .env and set: GEMINI_API_KEY=your-actual-key-here"
+        echo "🔗 Get your API key from: https://makersuite.google.com/app/apikey"
+        exit 1
+    fi
 else
-    echo "✅ GEMINI_API_KEY is set"
+    echo "❌ .env file not found. Tests require proper configuration."
+    echo "   Copy .env.example to .env and set your API key:"
+    echo "   cp .env.example .env"
+    echo "   Edit .env and set: GEMINI_API_KEY=your-actual-key-here"
+    echo "🔗 Get your API key from: https://makersuite.google.com/app/apikey"
+    exit 1
 fi
 
 echo ""

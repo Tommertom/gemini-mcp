@@ -15,7 +15,7 @@ export class GeminiClient {
 
         this.genAI = new GoogleGenerativeAI(config.apiKey);
         this.model = this.genAI.getGenerativeModel({
-            model: config.model || 'gemini-1.5-flash'
+            model: config.model || 'gemini-2.5-flash'
         });
         this.outputDir = config.outputDir || '/tmp/gemini_mcp';
     }

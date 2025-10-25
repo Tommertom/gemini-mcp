@@ -5,9 +5,35 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import os from 'os';
+import * as dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load environment variables from .env file
+const envPath = path.join(__dirname, '..', '.env');
+const dotenvResult = dotenv.config({ path: envPath });
+
+// Validate .env file loading
+if (dotenvResult.error) {
+    console.error('❌ Failed to load .env file:', dotenvResult.error.message);
+    console.error('💡 Create a .env file by copying .env.example:');
+    console.error('   cp .env.example .env');
+    console.error('   Edit .env and set your GEMINI_API_KEY');
+    process.exit(1);
+}
+
+// Validate API key is configured
+if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your-api-key-here') {
+    console.error('❌ GEMINI_API_KEY not properly configured in .env file');
+    console.error('💡 Edit .env and set your actual Gemini API key:');
+    console.error('   GEMINI_API_KEY=your-actual-api-key-here');
+    console.error('🔗 Get your API key from: https://makersuite.google.com/app/apikey');
+    process.exit(1);
+}
+
+console.log('✅ .env file loaded successfully');
+console.log('✅ GEMINI_API_KEY is configured');
 
 // Test configuration
 interface TestConfig {
@@ -18,6 +44,8 @@ interface TestConfig {
         testImage: string;
         generateOutput: string;
         manipulateOutput: string;
+        imagePromptOutput: string;
+        videoScriptOutput: string;
     };
 }
 
@@ -26,9 +54,11 @@ const TEST_CONFIG: TestConfig = {
     testTimeout: 30000, // 30 seconds
     outputDir: '/tmp/gemini_mcp_test',
     testFiles: {
-        testImage: path.join(os.tmpdir(), 'test-image.txt'),
-        generateOutput: 'test-generation.txt',
-        manipulateOutput: 'test-manipulation.txt'
+        testImage: path.join(os.tmpdir(), 'test-image.jpg'),
+        generateOutput: 'creative-description.txt',
+        manipulateOutput: 'editing-instructions.md',
+        imagePromptOutput: 'image-generation-prompt.txt',
+        videoScriptOutput: 'video-script.txt'
     }
 };
 
@@ -63,21 +93,18 @@ class MCPTester {
             console.log(`📁 Output directory already exists: ${TEST_CONFIG.outputDir}`);
         }
 
-        // Create a simple test file to simulate media
-        const testContent = 'This is a test file simulating an image for MCP testing purposes. It contains sample text that can be analyzed by the media analysis tools.';
-        await fs.writeFile(TEST_CONFIG.testFiles.testImage, testContent);
-        console.log(`✅ Created test file: ${TEST_CONFIG.testFiles.testImage}`);
+        // Create a simple test image file (minimal 1x1 pixel JPEG)
+        // This is a base64-encoded 1x1 red pixel JPEG image
+        const minimalJpegBase64 = '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=';
+        const imageBuffer = Buffer.from(minimalJpegBase64, 'base64');
+        await fs.writeFile(TEST_CONFIG.testFiles.testImage, imageBuffer);
+        console.log(`✅ Created test image file: ${TEST_CONFIG.testFiles.testImage}`);
     }
 
     async startServer(): Promise<void> {
         console.log('🚀 Starting MCP server...');
 
         return new Promise((resolve, reject) => {
-            // Check if the API key is set
-            if (!process.env.GEMINI_API_KEY) {
-                console.log('⚠️  GEMINI_API_KEY not set, using test key. Some operations may fail.');
-            }
-
             // Start the server process
             this.server = spawn('node', [TEST_CONFIG.serverPath], {
                 stdio: ['pipe', 'pipe', 'pipe'],
@@ -328,6 +355,76 @@ class MCPTester {
         }
     }
 
+    async testImagePromptGeneration(): Promise<string> {
+        console.log('\n🖼️  Testing image prompt generation...');
+
+        const response = await this.sendRequest('tools/call', {
+            name: 'generate_media',
+            arguments: {
+                prompt: 'Create a detailed DALL-E or Midjourney prompt for generating a professional product photography shot of a luxury watch. Include specific lighting setup, background, composition, camera angle, and style details.',
+                outputFile: TEST_CONFIG.testFiles.imagePromptOutput
+            }
+        });
+
+        if (response.result && response.result.content) {
+            const output = response.result.content[0].text;
+            console.log('✅ Image prompt generation result:');
+            console.log('📄 Output file:', output);
+
+            // Verify file was created if output looks like a path
+            if (output.includes(TEST_CONFIG.outputDir)) {
+                try {
+                    const content = await fs.readFile(output, 'utf8');
+                    console.log('📄 Generated prompt preview:', content.substring(0, 150) + '...');
+                } catch (error: any) {
+                    console.log('⚠️  Could not read prompt file:', error.message);
+                }
+            }
+
+            return output;
+        } else if (response.error) {
+            console.log('⚠️  Image prompt generation error:', response.error);
+            return `Error: ${response.error.message || 'Unknown error'}`;
+        } else {
+            throw new Error('Invalid generate_media response');
+        }
+    }
+
+    async testVideoScriptGeneration(): Promise<string> {
+        console.log('\n🎬 Testing video script generation...');
+
+        const response = await this.sendRequest('tools/call', {
+            name: 'generate_media',
+            arguments: {
+                prompt: 'Create a detailed 30-second video script for a tech startup promotional video. Include shot descriptions, camera movements, dialogue, timing, music cues, and visual effects. Format as a professional shooting script.',
+                outputFile: TEST_CONFIG.testFiles.videoScriptOutput
+            }
+        });
+
+        if (response.result && response.result.content) {
+            const output = response.result.content[0].text;
+            console.log('✅ Video script generation result:');
+            console.log('📄 Output file:', output);
+
+            // Verify file was created if output looks like a path
+            if (output.includes(TEST_CONFIG.outputDir)) {
+                try {
+                    const content = await fs.readFile(output, 'utf8');
+                    console.log('📄 Generated script preview:', content.substring(0, 150) + '...');
+                } catch (error: any) {
+                    console.log('⚠️  Could not read script file:', error.message);
+                }
+            }
+
+            return output;
+        } else if (response.error) {
+            console.log('⚠️  Video script generation error:', response.error);
+            return `Error: ${response.error.message || 'Unknown error'}`;
+        } else {
+            throw new Error('Invalid generate_media response');
+        }
+    }
+
     async testErrorHandling(): Promise<void> {
         console.log('\n❌ Testing error handling...');
 
@@ -407,6 +504,8 @@ class MCPTester {
 
             const tools = await this.testListTools();
             await this.testGenerateMedia();
+            await this.testImagePromptGeneration();
+            await this.testVideoScriptGeneration();
             await this.testAnalyzeMedia();
             await this.testManipulateMedia();
             await this.testErrorHandling();

@@ -44,7 +44,7 @@ Create a `.env` file in your project root:
 
 ```env
 GEMINI_API_KEY=your-api-key-here
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.5-flash
 GEMINI_OUTPUT_DIR=/tmp/gemini_mcp
 ```
 
