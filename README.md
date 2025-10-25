@@ -63,7 +63,7 @@ Edit the `claude_desktop_config.json` file:
   "mcpServers": {
     "gemini": {
       "command": "npx",
-      "args": ["-y", "gemini-mcp-server@latest"],
+      "args": ["-y", "awesome-gemini-image-mcp@latest"],
       "env": {
         "GEMINI_API_KEY": "your-api-key-here"
       }
@@ -81,7 +81,7 @@ Edit the `cline_mcp_settings.json` file:
   "mcpServers": {
     "gemini": {
       "command": "npx",
-      "args": ["-y", "gemini-mcp-server@latest"],
+      "args": ["-y", "awesome-gemini-image-mcp@latest"],
       "disabled": false,
       "env": {
         "GEMINI_API_KEY": "your-api-key-here"
@@ -101,7 +101,7 @@ Edit `.vscode/mcp.json` in your workspace:
     "gemini": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "gemini-mcp-server@latest"],
+      "args": ["-y", "awesome-gemini-image-mcp@latest"],
       "env": {
         "GEMINI_API_KEY": "your-api-key-here"
       }
