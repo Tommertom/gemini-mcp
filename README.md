@@ -114,23 +114,24 @@ Edit `.vscode/mcp.json` in your workspace:
 
 ### generate_media
 
-Generate creative content, descriptions, or scripts for images/videos using AI with professional prompt engineering.
+Generate actual images using Gemini's AI image generation capabilities.
 
-**Best for**: Image generation prompts, video storyboards, character descriptions, scene settings, creative briefs
+**Best for**: Creating visual assets, UI/UX mockups, product photography, illustrations, graphics, placeholder images
 
 ```javascript
 await mcpClient.callTool('generate_media', {
-  prompt: 'Create a detailed prompt for a hero image: Professional business team in modern office, natural lighting through large windows, diverse group collaborating around laptop, photorealistic style, 16:9 aspect ratio, corporate yet approachable mood',
-  outputFile: 'hero_image_prompt.txt'
+  prompt: 'A photorealistic sunset over a mountain lake, golden hour lighting, reflection on calm water, 4K quality, dramatic sky with orange and purple hues',
+  outputFile: 'sunset-landscape'
 });
 ```
 
 **Prompt Engineering Best Practices**:
-- **Images**: Specify style, composition, lighting, colors, mood, subject details
-- **Videos**: Include shot types, transitions, pacing, narrative structure, duration
-- **Technical**: Mention aspect ratios, resolution, frame rates when relevant
-- **Style**: Reference artistic styles, photographers, cinematographers
-- **Emotion**: Clearly state desired emotional response or atmosphere
+- **Be Specific**: Include details about style, composition, lighting, colors, mood, and subject
+- **Photorealistic**: Use photography terms (camera angles, lens types, lighting setups)
+- **Artistic Styles**: Specify watercolor, sketch, digital art, impressionism, etc.
+- **Technical Details**: Mention quality level, rendering style, aspect ratios
+- **Composition**: Specify framing, rule of thirds, focal points, depth of field
+- **Mood**: Describe the emotional tone and atmosphere you want to convey
 
 ### analyze_media
 
@@ -215,14 +216,16 @@ await mcpClient.callTool('manipulate_media', {
 ### Content Generation for AI Agents
 
 ```javascript
-// Generate detailed image creation prompt
+// Generate SaaS landing page hero image
 await mcpClient.callTool('generate_media', {
-  prompt: 'Create a comprehensive prompt for generating a SaaS landing page hero image: Modern, minimalist design, gradient background (blue to purple), floating UI elements showing analytics dashboard, subtle glow effects, isometric perspective, high-tech feel, suitable for dark mode website, 1920x1080 resolution'
+  prompt: 'Modern, minimalist SaaS landing page hero image with gradient background (blue to purple), floating UI elements showing analytics dashboard, subtle glow effects, isometric perspective, high-tech feel, suitable for dark mode website, professional and clean aesthetic',
+  outputFile: 'saas-hero-image'
 });
 
-// Video storyboard generation
+// Generate product photography
 await mcpClient.callTool('generate_media', {
-  prompt: 'Generate a detailed storyboard for 30-second product demo video: Shot 1 (5s): Close-up of product with soft focus background, Shot 2 (8s): Medium shot showing product in use, hands interacting, Shot 3 (7s): Wide shot of lifestyle context, Shot 4 (5s): Feature highlights with animated text overlays, Shot 5 (5s): Call-to-action with logo. Include camera movements, lighting notes, and transition types for each shot.'
+  prompt: 'Professional product photography of a smartwatch on white background, studio lighting with soft shadows, 45-degree angle, macro lens detail showing screen interface, reflective surface, commercial quality, clean and minimal composition',
+  outputFile: 'smartwatch-product-shot'
 });
 ```
 

@@ -27,14 +27,14 @@ Best practices: Use detailed, specific prompts for optimal results
 ### 3. Tool-Specific Enhancements
 
 #### generate_media
-**Focus**: Image and video concept generation
+**Focus**: Actual image generation using AI
 
 **New Features**:
-- Image generation prompt templates (style, composition, lighting, colors, mood, technical specs)
-- Video storyboard structure (duration, shot types, camera work, transitions, audio)
-- Character and scene description best practices
-- Style reference guidance
-- Emotional tone specification
+- Direct image generation from text prompts
+- Support for multiple styles (photorealistic, artistic, illustrated)
+- Composition control (framing, lighting, colors, mood)
+- Technical quality specifications
+- Automatic file format handling
 
 **Example Best Practices**:
 - Style References: Reference artistic styles, photographers, or cinematographers
@@ -252,15 +252,15 @@ control checks, and export settings for 400x400px web use."
 ## 🎓 Use Cases Now Supported
 
 ### Content Creators
-- Generate detailed image creation prompts for AI image generators
-- Create comprehensive video storyboards
+- Generate actual images for social media, websites, and presentations
+- Create visual assets and graphics programmatically
 - Analyze visual content for quality and composition
 - Get professional editing guidance
 
 ### Marketing Teams
+- Generate marketing visuals and product photography
 - Analyze brand image quality and consistency
-- Generate specifications for marketing visuals
-- Create video production blueprints
+- Create visual assets for campaigns
 - Quality control for visual assets
 
 ### Video Production
@@ -295,11 +295,11 @@ control checks, and export settings for 400x400px web use."
 
 ## 📖 Quick Start for AI Agents
 
-### 1. Generate Image Concept
+### 1. Generate Image
 ```javascript
 await callTool('generate_media', {
-  prompt: '[Subject] in [setting], [shot type], [lighting], [color palette], [style], [mood], [technical specs]',
-  outputFile: 'concept.txt'
+  prompt: 'Professional business team in modern office, natural lighting through large windows, diverse group collaborating around laptop, photorealistic style, corporate yet approachable mood, 4K quality',
+  outputFile: 'business-team-image'
 });
 ```
 

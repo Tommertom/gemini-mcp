@@ -44,9 +44,9 @@ Gemini-mcp/
 The MCP server provides three main tools:
 
 1. **generate_media**
-   - Generate content from text prompts using Gemini AI
-   - Outputs to `/tmp/gemini_mcp`
-   - Parameters: `prompt` (required), `outputFile` (optional)
+   - Generate actual images from text prompts using Gemini AI
+   - Outputs images to `/tmp/gemini_mcp`
+   - Parameters: `prompt` (required), `outputFile` (required)
 
 2. **analyze_media**
    - Analyze media files (images, videos, audio) with custom prompts
@@ -54,9 +54,9 @@ The MCP server provides three main tools:
    - Parameters: `filePath` (required), `prompt` (required)
 
 3. **manipulate_media**
-   - Transform or manipulate media files using AI prompts
-   - Outputs to `/tmp/gemini_mcp`
-   - Parameters: `inputFile` (required), `prompt` (required), `outputFile` (optional)
+   - Generate editing instructions for media files using AI prompts
+   - Outputs text instructions to `/tmp/gemini_mcp`
+   - Parameters: `inputFile` (required), `prompt` (required), `outputFile` (required)
 
 ### Configuration
 

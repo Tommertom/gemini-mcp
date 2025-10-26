@@ -71,7 +71,11 @@ export class GeminiClient {
 
             // Determine file extension from mime type
             const extension = mimeType.split('/')[1] || 'png';
-            const outputPath = path.join(this.outputDir, outputFile.endsWith(`.${extension}`) ? outputFile : `${outputFile}.${extension}`);
+
+            // Check if file already has a valid image extension
+            const hasValidExtension = /\.(png|jpg|jpeg|gif|webp)$/i.test(outputFile);
+            const outputFileName = hasValidExtension ? outputFile : `${outputFile}.${extension}`;
+            const outputPath = path.join(this.outputDir, outputFileName);
 
             await fs.writeFile(outputPath, imageData);
 
@@ -148,7 +152,10 @@ export class GeminiClient {
             const response = await result.response;
             const text = response.text();
 
-            const outputPath = path.join(this.outputDir, outputFile);
+            // Ensure output file has an extension (default to .png if none provided)
+            const hasExtension = /\.[a-zA-Z0-9]+$/.test(outputFile);
+            const outputFileName = hasExtension ? outputFile : `${outputFile}.png`;
+            const outputPath = path.join(this.outputDir, outputFileName);
 
             await fs.writeFile(outputPath, text);
 
